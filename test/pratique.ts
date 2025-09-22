@@ -1,31 +1,34 @@
 import pactum from 'pactum';
 import { SimpleReporter } from '../simple-reporter';
-import { faker } from '@faker-js/faker';
 import { StatusCodes } from 'http-status-codes';
 
-describe('Reqres API', () => {
+describe('ReqRes API - Users', () => {
   const p = pactum;
   const rep = SimpleReporter;
+  const baseUrl = 'https://reqres.in/api';
 
-  it('deve listar os usuários com sucesso', async () => {
-    await p.spec()
-      .get('https://reqres.in/api/users')
+  p.request.setDefaultTimeout(90000);
+
+  beforeAll(() => {
+    p.reporter.add(rep);
+  });
+
+  it('Deve listar usuários da página 2', async () => {
+    await p
+      .spec()
+      .get(`${baseUrl}/users?page=2`)
       .expectStatus(StatusCodes.OK)
-      .expectJsonMatch({
-        "page": "number",
-        "per_page": "number",
-        "total": "number",
-        "total_pages": "number",
-        "data": [
+      .expectBodyContains('data')
+      .expectJsonLike({
+        page: 2,
+        data: [
           {
-            "id": "number",
-            "email": "string",
-            "first_name": "string",
-            "last_name": "string",
-            "avatar": "string"
+            id: 7,
+            email: 'michael.lawson@reqres.in'
           }
         ]
-      })
-      .inspect();
+      });
   });
+
+  afterAll(() => p.reporter.end());
 });
